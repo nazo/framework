@@ -145,10 +145,11 @@ class Migrator {
 	/**
 	 * Rollback the last migration operation.
 	 *
-	 * @param  bool  $pretend
+	 * @param  string  $path
+	 * @param  bool    $pretend
 	 * @return int
 	 */
-	public function rollback($pretend = false)
+	public function rollback($path, $pretend = false)
 	{
 		$this->notes = array();
 
@@ -163,6 +164,8 @@ class Migrator {
 
 			return count($migrations);
 		}
+
+		$this->requireFiles($path, $migrations);
 
 		// We need to reverse these migrations so that they are "downed" in reverse
 		// to what they run on "up". It lets us backtrack through the migrations
@@ -244,7 +247,13 @@ class Migrator {
 	 */
 	public function requireFiles($path, array $files)
 	{
-		foreach ($files as $file) $this->files->requireOnce($path.'/'.$file.'.php');
+		foreach ($files as $file)
+		{
+			if (is_object($file)) {
+				$file = $file->migration;
+			}
+			$this->files->requireOnce($path.'/'.$file.'.php');
+		}
 	}
 
 	/**

@@ -5,7 +5,7 @@ use Illuminate\Console\ConfirmableTrait;
 use Illuminate\Database\Migrations\Migrator;
 use Symfony\Component\Console\Input\InputOption;
 
-class ResetCommand extends Command {
+class ResetCommand extends BaseCommand {
 
 	use ConfirmableTrait;
 
@@ -56,9 +56,18 @@ class ResetCommand extends Command {
 
 		$pretend = $this->input->getOption('pretend');
 
+		if ( ! is_null($path = $this->input->getOption('path')))
+		{
+			$path = $this->laravel['path.base'].'/'.$path;
+		}
+		else
+		{
+			$path = $this->getMigrationPath();
+		}
+
 		while (true)
 		{
-			$count = $this->migrator->rollback($pretend);
+			$count = $this->migrator->rollback($path, $pretend);
 
 			// Once the migrator has run we will grab the note output and send it out to
 			// the console screen, since the migrator itself functions without having
@@ -83,6 +92,8 @@ class ResetCommand extends Command {
 			array('database', null, InputOption::VALUE_OPTIONAL, 'The database connection to use.'),
 
 			array('force', null, InputOption::VALUE_NONE, 'Force the operation to run when in production.'),
+
+			array('path', null, InputOption::VALUE_OPTIONAL, 'The path of migrations files to be executed.'),
 
 			array('pretend', null, InputOption::VALUE_NONE, 'Dump the SQL queries that would be run.'),
 		);
